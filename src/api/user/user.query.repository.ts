@@ -27,14 +27,14 @@ export class UserQueryRepository {
     const size = pageSize ? Number(pageSize) : 10;
 
     const terms: string[] = [];
-    const orderBy = `ORDER BY u."${sortBy}" ${sortDirection}`;
+    const orderBy = this.getOrderBy(sortBy, sortDirection);
 
     if (searchLoginTerm) {
-      terms.push(`u."login" like '%${searchLoginTerm}%'`);
+      terms.push(`u."login" ILIKE '%${searchLoginTerm}%'`);
     }
 
     if (searchEmailTerm) {
-      terms.push(`u."email" like '%${searchEmailTerm}%'`);
+      terms.push(`u."email" ILIKE '%${searchEmailTerm}%'`);
     }
 
     if (banStatus === BanStatuses.BANNED) {
@@ -45,7 +45,7 @@ export class UserQueryRepository {
       terms.push(`bi."isBanned" = false`);
     }
 
-    const where = !isEmpty(terms) ? `WHERE ${terms.join(' AND ')}` : '';
+    const where = !isEmpty(terms) ? `WHERE ${terms.join(' OR ')}` : '';
 
     const totalCountResponse = await this.dataSource.query(`
       SELECT COUNT(*)
@@ -100,7 +100,7 @@ export class UserQueryRepository {
   }
   _getUserViewModel(user: any): UserViewModel {
     return {
-      id: user.id,
+      id: String(user.id),
       login: user.login,
       email: user.email,
       createdAt: user.createdAt,
@@ -124,7 +124,7 @@ export class UserQueryRepository {
       pageSize,
       totalCount,
       items: items.map((item) => ({
-        id: item.id,
+        id: String(item.id),
         login: item.login,
         email: item.email,
         createdAt: item.createdAt,
@@ -135,5 +135,12 @@ export class UserQueryRepository {
         },
       })),
     };
+  }
+  getOrderBy(sortBy: string, sortDirection: SortDirection) {
+    if (sortBy === 'createdAt') {
+      return `ORDER BY u."${sortBy}" ${sortDirection}`;
+    }
+
+    return `ORDER BY u."${sortBy}" COLLATE \"C\" ${sortDirection}`;
   }
 }

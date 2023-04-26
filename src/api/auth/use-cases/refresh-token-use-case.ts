@@ -1,12 +1,12 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { formatISO } from 'date-fns';
+import { formatISO, isEqual } from 'date-fns';
 import { AuthService } from '../../auth/auth.service';
 import { UserRepository } from '../../user/user.repository';
 import { DeviceSqlRepository } from '../../device/device.sql.repository';
 
 export class RefreshTokenCommand {
   constructor(
-    public userId: number,
+    public userId: string,
     public deviceId: string,
     public deviceIat: string,
   ) {}
@@ -35,7 +35,7 @@ export class RefreshTokenUseCase
       return null;
     }
     // Если даты создания устройства не совпадают, возвращаем ошибку 401
-    if (deviceIat !== device.lastActiveDate) {
+    if (!isEqual(new Date(deviceIat), new Date(device.lastActiveDate))) {
       return null;
     }
     // Обновляем access токен, refresh токен и дату истекания срока refreshToken

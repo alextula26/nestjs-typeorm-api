@@ -1,12 +1,13 @@
 import { HttpStatus } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { isEqual } from 'date-fns';
 
 import { UserRepository } from '../../user/user.repository';
 import { DeviceSqlRepository } from '../../device/device.sql.repository';
 
 export class LogoutCommand {
   constructor(
-    public userId: number,
+    public userId: string,
     public deviceId: string,
     public deviceIat: string,
   ) {}
@@ -29,10 +30,8 @@ export class LogoutUseCase implements ICommandHandler<LogoutCommand> {
     if (!user || !device) {
       return { statusCode: HttpStatus.UNAUTHORIZED };
     }
-    console.log('deviceIat', deviceIat);
-    console.log('device.lastActiveDate', device.lastActiveDate);
     // Если даты создания устройства не совпадают, возвращаем ошибку 401
-    if (deviceIat !== device.lastActiveDate) {
+    if (!isEqual(new Date(deviceIat), new Date(device.lastActiveDate))) {
       return { statusCode: HttpStatus.UNAUTHORIZED };
     }
     // Очищаем refreshToken пользователя

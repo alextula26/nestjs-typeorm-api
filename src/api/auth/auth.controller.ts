@@ -18,7 +18,7 @@ import { Request, Response } from 'express';
 import {
   AuthBearerGuard,
   AuthRefreshTokenGuard,
-  // AuthCountRequestsGuard,
+  AuthCountRequestsGuard,
 } from '../../guards';
 
 import {
@@ -69,7 +69,7 @@ export class AuthController {
   }
   // Аутентификация пользователя
   @Post('/login')
-  //@UseGuards(AuthCountRequestsGuard)
+  @UseGuards(AuthCountRequestsGuard)
   @HttpCode(HttpStatus.OK)
   async login(
     @Req() request: Request,
@@ -103,7 +103,7 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async logout(
     @Req()
-    request: Request & { userId: number; deviceId: string; deviceIat: string },
+    request: Request & { userId: string; deviceId: string; deviceIat: string },
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
     // Выполняем logout пользователя
@@ -123,7 +123,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async refreshToken(
     @Req()
-    request: Request & { userId: number; deviceId: string; deviceIat: string },
+    request: Request & { userId: string; deviceId: string; deviceIat: string },
     @Res({ passthrough: true }) response: Response,
   ): Promise<AuthAccessTokenModel> {
     // Формируем токены
@@ -150,7 +150,7 @@ export class AuthController {
   }
   // Регистрация пользователя
   @Post('registration')
-  // @UseGuards(AuthCountRequestsGuard)
+  @UseGuards(AuthCountRequestsGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async registration(
     @Body() registrationUserDto: RegistrationUserDto,
@@ -166,7 +166,7 @@ export class AuthController {
   }
   // Подтверждение email по коду
   @Post('/registration-confirmation')
-  // @UseGuards(AuthCountRequestsGuard)
+  @UseGuards(AuthCountRequestsGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async registrationConfirmation(
     @Body() registrationConfirmationDto: RegistrationConfirmationDto,
@@ -182,7 +182,7 @@ export class AuthController {
   }
   // Повторная отправка кода подтверждения email
   @Post('/registration-email-resending')
-  //@UseGuards(AuthCountRequestsGuard)
+  @UseGuards(AuthCountRequestsGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async registrationEmailResending(
     @Body() registrationEmailDto: RegistrationEmailDto,
@@ -199,7 +199,7 @@ export class AuthController {
   }
   // Восстановление пароля с помощью подтверждения по электронной почте.
   @Post('/password-recovery')
-  // @UseGuards(AuthCountRequestsGuard)
+  @UseGuards(AuthCountRequestsGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async passwordRecovery(
     @Body() registrationEmailDto: RegistrationEmailDto,
@@ -216,7 +216,7 @@ export class AuthController {
   }
   // Подтверждение восстановление пароля
   @Post('/new-password')
-  // @UseGuards(AuthCountRequestsGuard)
+  @UseGuards(AuthCountRequestsGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async newPassword(
     @Body() confirmPasswordDto: ConfirmPasswordDto,
