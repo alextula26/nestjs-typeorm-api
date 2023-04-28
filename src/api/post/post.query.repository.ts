@@ -287,7 +287,7 @@ export class PostQueryRepository {
 
     const foundPost = await this.dataSource.query(query);
 
-    if (!foundPost) {
+    if (isEmpty(foundPost)) {
       return null;
     }
 
@@ -390,9 +390,9 @@ export class PostQueryRepository {
   }
   getOrderBy(sortBy: string, sortDirection: SortDirection) {
     if (sortBy === 'createdAt') {
-      return `ORDER BY posts."${sortBy}" ${sortDirection}`;
+      return `ORDER BY "${sortBy}" ${sortDirection}`;
     }
 
-    return `ORDER BY posts."${sortBy}" COLLATE \"C\" ${sortDirection}`;
+    return `ORDER BY "${sortBy}" COLLATE \"C\" ${sortDirection}`;
   }
 }

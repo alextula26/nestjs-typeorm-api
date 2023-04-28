@@ -84,12 +84,12 @@ export class BlogQueryRepository {
         "isMembership",
         "createdAt"
       FROM blogs
-      WHERE id = '${blogId}' AND "isBanned" = false;
+      WHERE "id" = '${blogId}' AND "isBanned" = false;
     `;
 
     const foundBlog = await this.dataSource.query(query);
 
-    if (!foundBlog) {
+    if (isEmpty(foundBlog)) {
       return null;
     }
 
@@ -286,9 +286,9 @@ export class BlogQueryRepository {
   }
   getOrderBy(sortBy: string, sortDirection: SortDirection) {
     if (sortBy === 'createdAt') {
-      return `ORDER BY blogs."${sortBy}" ${sortDirection}`;
+      return `ORDER BY "${sortBy}" ${sortDirection}`;
     }
 
-    return `ORDER BY blogs."${sortBy}" COLLATE \"C\" ${sortDirection}`;
+    return `ORDER BY "${sortBy}" COLLATE \"C\" ${sortDirection}`;
   }
 }
