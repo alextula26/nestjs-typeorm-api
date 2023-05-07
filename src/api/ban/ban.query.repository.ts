@@ -22,21 +22,22 @@ export class BanQueryRepository {
     const size = pageSize ? Number(pageSize) : 10;
 
     const terms: string[] = [];
+    const orderBy = this.getOrderBy(sortBy, sortDirection);
 
     if (searchLoginTerm) {
       terms.push(`u."login" ILIKE '%${searchLoginTerm}%'`);
     }
 
     const where = !isEmpty(terms)
-      ? `WHERE bui."blogId" = '${blogId}' AND bui."isBanned" = true AND ${terms.join(
+      ? `WHERE bufb."blogId" = '${blogId}' AND bufb."isBanned" = true AND ${terms.join(
           ' OR ',
         )}`
-      : `WHERE bui."blogId" = '${blogId}' AND bui."isBanned" = true`;
+      : `WHERE bufb."blogId" = '${blogId}' AND bufb."isBanned" = true`;
 
     const totalCountResponse = await this.dataSource.query(`
       SELECT COUNT(*) 
-      FROM ban_user_info as bui
-      LEFT JOIN users as u ON u."id" = bui."userId"
+      FROM ban_user_for_blog as bufb
+      LEFT JOIN users as u ON u."id" = bufb."userId"
       ${where};
     `);
 
@@ -50,21 +51,21 @@ export class BanQueryRepository {
 
     const query = `
       SELECT 
-        bui."id", 
-        bui."isBanned", 
-        bui."banDate",
-        bui."banReason",
-        bui."createdAt",
+        bufb."id", 
+        bufb."isBanned", 
+        bufb."banDate",
+        bufb."banReason",
+        bufb."createdAt",
         u."login" as "userLogin",
         u."id" as "userId"
-      FROM ban_user_info as bui
-      LEFT JOIN users as u ON u."id" = bui."userId"
+      FROM ban_user_for_blog as bufb
+      LEFT JOIN users as u ON u."id" = bufb."userId"
       ${where}
-      ORDER BY "${sortBy}" ${sortDirection}
+      ${orderBy}
       ${offset}
       ${limit};
     `;
-
+    console.log('query', query);
     const foundBanUserForBlog = await this.dataSource.query(query);
 
     return this._getBlogsViewModelDetail({
@@ -97,5 +98,16 @@ export class BanQueryRepository {
         },
       })),
     };
+  }
+  getOrderBy(sortBy: string, sortDirection: SortDirection) {
+    if (sortBy === 'createdAt' || sortBy === 'banDate') {
+      return `ORDER BY bufb."${sortBy}" ${sortDirection}`;
+    }
+
+    if (sortBy === 'login') {
+      return `ORDER BY u."${sortBy}" COLLATE \"C\" ${sortDirection}`;
+    }
+
+    return '';
   }
 }
